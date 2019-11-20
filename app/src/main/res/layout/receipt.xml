@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/receiptView"
+                android:layout_width="150dp"
+                android:maxWidth="150dp"
+                android:layout_height="150dp"
+                android:maxHeight="150dp"
+                />
+
+            <TextView
+                android:layout_marginLeft="20dp"
+                android:paddingTop="10dp"
+                android:id="@+id/textDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Description"
+                android:layout_toRightOf="@+id/receiptView"/>
+
+            <TextView
+                android:layout_marginLeft="20dp"
+                android:paddingTop="10dp"
+                android:id="@+id/textDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Date"
+                android:layout_toRightOf="@+id/receiptView"
+                android:layout_below="@+id/textDescription"/>
+
+            <TextView
+                android:layout_marginLeft="20dp"
+                android:paddingTop="10dp"
+                android:id="@+id/textTotal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Total"
+                android:layout_toRightOf="@+id/receiptView"
+                android:layout_below="@+id/textDate"/>
+
+
+        </RelativeLayout>
+
+
+
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
