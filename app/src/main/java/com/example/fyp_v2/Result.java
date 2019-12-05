@@ -55,6 +55,7 @@ public class Result extends AppCompatActivity {
     private EditText inputDescription, inputTotal;
     private ImageView imageView;
     private Bitmap bitmap;
+    private Bitmap newBitmap;
     private Context context;
     private ProgressDialog p;
     private Uri fileUri;
@@ -92,11 +93,16 @@ public class Result extends AppCompatActivity {
         String filename = getIntent().getStringExtra("filePath");
         fileUri = Uri.parse(filename);
 
+        Preprocessing preprocessing = new Preprocessing();
+
         try {
             InputStream is = context.getContentResolver().openInputStream(fileUri);
             final BitmapFactory.Options options = new BitmapFactory.Options();
             bitmap = BitmapFactory.decodeStream(is, null, options);
             bitmap = scaleToFill(bitmap, 864, 1152);
+            Log.i("Fail", "Fail");
+
+            newBitmap = preprocessing.rotate(bitmap);
 
         } catch (Exception ex) {
             Log.i(getClass().getSimpleName(), ex.getMessage());
@@ -104,7 +110,7 @@ public class Result extends AppCompatActivity {
         }
 
         runTextRecognition();
-        imageView.setImageBitmap(bitmap);
+        imageView.setImageBitmap(newBitmap);
 
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
