@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -19,17 +20,19 @@ public class ReceiptAdapter extends RecyclerView.Adapter<ReceiptAdapter.ImageVie
 
     private Context mContext;
     private List<Receipt> mReceipt;
+    private OnReceiptListener onReceiptListener;
 
-    public ReceiptAdapter(Context context, List<Receipt> uploads){
+    public ReceiptAdapter(Context context, List<Receipt> uploads,OnReceiptListener onReceiptListener){
         mContext = context;
         mReceipt = uploads;
+        this.onReceiptListener = onReceiptListener;
     }
 
     @NonNull
     @Override
     public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(mContext).inflate(R.layout.receipt, parent, false);
-        return new ImageViewHolder(v);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.receipt, parent, false);
+        return new ImageViewHolder(view, onReceiptListener);
     }
 
     @Override
@@ -44,6 +47,7 @@ public class ReceiptAdapter extends RecyclerView.Adapter<ReceiptAdapter.ImageVie
                 .fit()
                 .centerCrop()
                 .into(holder.image);
+
     }
 
     @Override
@@ -51,20 +55,42 @@ public class ReceiptAdapter extends RecyclerView.Adapter<ReceiptAdapter.ImageVie
         return mReceipt.size();
     }
 
-    public class ImageViewHolder extends RecyclerView.ViewHolder{
+    public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener{
 
         public TextView description;
         public TextView date;
         public TextView total;
         public ImageView image;
 
-        public ImageViewHolder(@NonNull View itemView) {
+        OnReceiptListener onReceiptListener;
+
+        public ImageViewHolder(@NonNull View itemView, OnReceiptListener onReceiptListener) {
             super(itemView);
 
             description = itemView.findViewById(R.id.textDescription);
             date = itemView.findViewById(R.id.textDate);
             total = itemView.findViewById(R.id.textTotal);
             image = itemView.findViewById(R.id.receiptView);
+
+            this.onReceiptListener = onReceiptListener;
+
+            //itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
         }
+
+        /*@Override
+        public void onClick(View view) {
+            onReceiptListener.onReceiptClick(getAdapterPosition());
+        }*/
+
+        @Override
+        public boolean onLongClick(View view) {
+            onReceiptListener.onReceiptClick(getAdapterPosition());
+            return false;
+        }
+    }
+
+    public interface OnReceiptListener{
+        void onReceiptClick(int position);
     }
 }

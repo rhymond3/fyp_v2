@@ -1,6 +1,9 @@
 package com.example.fyp_v2;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,12 +26,13 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RecentFragment extends Fragment {
+public class RecentFragment extends Fragment{
 
     private RecyclerView mRecyclerView;
     private ReceiptAdapter mAdapter;
     private DatabaseReference mDatabseRef;
     private List<Receipt> mUploads;
+    private DataSnapshot dataSnapshot;
 
     @Nullable
     @Override
@@ -41,7 +45,6 @@ public class RecentFragment extends Fragment {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         mUploads = new ArrayList<>();
-
         mDatabseRef = FirebaseDatabase.getInstance().getReference("Receipt").child(FirebaseAuth.getInstance().getUid());
 
         mDatabseRef.addValueEventListener(new ValueEventListener() {
@@ -51,7 +54,34 @@ public class RecentFragment extends Fragment {
                     Receipt receipt = postSnapshot.getValue(Receipt.class);
                     mUploads.add(receipt);
                 }
-                mAdapter = new ReceiptAdapter(getActivity(), mUploads);
+
+                mAdapter = new ReceiptAdapter(getActivity(), mUploads, new ReceiptAdapter.OnReceiptListener() {
+                    @Override
+                    public void onReceiptClick(final int position) {
+
+                        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+                        alertDialogBuilder.setMessage("Are you sure wants to remove the record");
+                        alertDialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                String id = mUploads.get(position).getReceiptID();
+                                DatabaseReference database = FirebaseDatabase.getInstance().getReference("Receipt").child(FirebaseAuth.getInstance().getUid()).child(id);
+                                database.removeValue();
+                                Log.i("ID",id);
+                                Toast.makeText(getActivity(), "Remove Successfully", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                        alertDialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Toast.makeText(getActivity(), "Failed Remove", Toast.LENGTH_LONG).show();
+                            }
+                        });
+
+                        AlertDialog alertDialog = alertDialogBuilder.create();
+                        alertDialog.show();
+                    }
+                });
 
                 mRecyclerView.setAdapter(mAdapter);
 

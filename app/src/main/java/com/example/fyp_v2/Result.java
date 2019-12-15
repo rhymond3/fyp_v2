@@ -48,7 +48,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class Result extends AppCompatActivity {
 
@@ -213,7 +216,7 @@ public class Result extends AppCompatActivity {
 
     private void processTextRecognitionResult(FirebaseVisionText texts) {
 
-        String elementText = "";
+        /*String elementText = "";
         String blockText = "";
         String lineText = "";
         List<RecognizedLanguage> lineLanguages;
@@ -238,6 +241,84 @@ public class Result extends AppCompatActivity {
                     Rect elementFrame = element.getBoundingBox();
                 }
             }
+        }*/
+
+        String elementText = "";
+
+        //block text loop
+        List<String> blocksNeed = new ArrayList<>();
+        List<Integer> lineWithTotal = new ArrayList<>();
+        int blocksIndex = 0, numOfLine;
+
+        //boolean var
+        boolean elementHasTotal, blockWithTotal, foundBlock = false;
+
+        // check every block text for total
+        for (FirebaseVisionText.TextBlock block : texts.getTextBlocks()){
+            //to reset every block
+            numOfLine = 0;
+            blockWithTotal = false;
+
+            if (foundBlock){
+                blocksNeed.add(block.getText() + "\n");
+                break;
+            }
+
+            for (FirebaseVisionText.Line line : block.getLines()){
+                //to reset every line
+                elementHasTotal = false;
+
+                for(FirebaseVisionText.Element element : line.getElements()){
+                    elementText += element.getText() + "\n";
+
+                    String curText = element.getText();
+                    if(!elementHasTotal)
+                        elementHasTotal = hasTotal(curText);
+                    else
+                        break;
+                }
+                if(elementHasTotal) {
+                    lineWithTotal.add(numOfLine);
+                    blockWithTotal = true;
+                }else
+                    numOfLine++;
+            }
+            if(blockWithTotal){
+                blocksIndex++;
+                foundBlock = true;}
+
+            blocksNeed.add(blocksIndex, block.getText());
+        }
+
+        String temp = "";
+
+        temp = blocksNeed.get(0);
+        List<String> candidate1 = Arrays.asList(temp.split("\n"));
+
+        temp = blocksNeed.get(2);
+        List<String> candidate2 = Arrays.asList(temp.split("\n"));
+        Log.i("Check1", "C1"+candidate1.toString()+" C2"+candidate2.toString());
+
+        candidate1 = cleanNoise(candidate1);
+        candidate2 = cleanNoise(candidate2);
+        Log.i("Check2", "C1"+candidate1.toString()+" C2"+candidate2.toString());
+
+        Log.i("CheckArray", lineWithTotal.toString());
+        candidate1 = onlyTotal(lineWithTotal, candidate1);
+        candidate2 = onlyTotal(lineWithTotal, candidate2);
+        Log.i("Check3", "C1"+candidate1.toString()+" C2"+candidate2.toString());
+
+
+        double max = 0, compare = 0, max1 = Double.parseDouble(candidate1.get(0)), max2 = Double.parseDouble(candidate2.get(0));
+
+        for(int i=2; i<candidate1.size(); i++){
+            compare = Double.parseDouble(candidate1.get(i));
+            max1 = getMaximum(max1, compare);
+        }
+
+        for(int i=2; i<candidate2.size(); i++){
+            compare = Double.parseDouble(candidate2.get(i));
+            max2 = getMaximum(max2, compare);
         }
 
         File sdCard = Environment.getExternalStorageDirectory();
@@ -254,6 +335,44 @@ public class Result extends AppCompatActivity {
         }
 
         inputTotal.setText(elementText);
+    }
+
+    public boolean hasTotal(String target) {
+        return Pattern.compile("\\b(\\w*total\\w*)\\b").matcher(target.toLowerCase()).matches();
+    }
+
+    public boolean isMoney (String target) {
+        return Pattern.compile("^[0-9]+(\\.[0-9]{1,2})?$").matcher(target).matches();
+    }
+
+    public double getMaximum (double max, double compare){
+        if(max < compare)
+            max = compare;
+        return max;
+    }
+
+    public List<String> cleanNoise (List<String> passIn){
+        List<String> passBack = new ArrayList<>();
+        for(int i=0; i<passIn.size(); i++){
+            boolean get = false;
+            get = isMoney(passIn.get(i));
+            if(get)
+                passBack.add(passIn.get(i));
+        }
+
+        return passBack;
+    }
+
+    public List<String> onlyTotal (List<Integer> target, List<String> passIn){
+        List<String> passBack = new ArrayList<>();
+        String temp = "";
+        int targets = 0;
+        for(int i=0; i<target.size(); i++){
+            targets = target.get(i);
+            temp = passIn.get(targets);
+            passBack.add(temp);
+        }
+        return passBack;
     }
 
     private String getFileExtension(Uri uri){
